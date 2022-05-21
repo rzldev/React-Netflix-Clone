@@ -9,11 +9,13 @@ type InputState = {
 }
 
 // Default input state
-const defaultInputState: InputState = {
-    value: '',
-    touched: false,
-    isValid: true,
-    errorMessage: '',
+const defaultInputState = (value?: string | null) : InputState => {
+    return {
+        value: value ?? '',
+        touched: false,
+        isValid: true,
+        errorMessage: '',
+    }
 }
 
 // An enum that have all type of input actions needed
@@ -31,39 +33,47 @@ type InputAction = {
     },
 }
 
+// Type for check validation props
+type CheckValiationType = ((value: string) => RuleInterface)[];
+
+// Check validation
+function checkValidation(validations: CheckValiationType, value: string): InputState {
+    let isInvalid = false;
+    let errorMessage = '';
+    for (const v of validations) {
+        isInvalid = v(value).rule;
+        errorMessage = v(value).error;
+
+        if (isInvalid) break;
+    }
+
+    const state = {
+        value: value,
+        touched: true,
+        isValid: !isInvalid,
+        errorMessage: isInvalid ? errorMessage : '',
+    }
+    return state;
+}
+
 // Reducer that used to handle every actions in this useInput hook
 function inputReducer(state: InputState, action: InputAction): InputState {
     switch (action.type) {
         case InputActionType.INPUT_CHANGE:
-            return {
-                ...state,
-                value: action.payload.value ?? '',
-            }
+            // if (state.touched && action.payload.rules && action.payload.rules.length > 0) {
+                return checkValidation(action.payload?.rules ?? [], action.payload?.value ?? '');
+            // } else {
+            //     return {
+            //         ...state,
+            //         value: action.payload.value ?? '',
+            //     }
+            // }
 
         case InputActionType.INPUT_BLUR:
-            for (const rule of action.payload.rules ?? []) {
-                const isInvalid = rule(state.value).rule;
-                const errorMessage = rule(state.value).error;
-
-                if (isInvalid) { /* <<< If error found! */
-                    return {
-                        value: state.value,
-                        touched: true,
-                        isValid: false,
-                        errorMessage
-                    }
-                }
-            }
-
-            return {  /*  */
-                ...state,
-                touched: true,
-                isValid: true,
-                errorMessage: '',
-            };
+            return checkValidation(action.payload.rules ?? [], state.value);
     
         default:
-            return defaultInputState;
+            return defaultInputState();
     }
 }
 
@@ -71,6 +81,7 @@ function inputReducer(state: InputState, action: InputAction): InputState {
 interface useInputInterface {
     value: string,
     isValid: boolean,
+    inputIsValid: boolean,
     errorMessage: string,
     inputChangeHandler: (value: string) => void,
     inputBlurHandler: () => void,
@@ -78,14 +89,16 @@ interface useInputInterface {
 
 
 // UseInput hook that can be used for handling input value from component
-function useInput(rules: ((value: string) => RuleInterface)[]): useInputInterface {
-    const [inputState, dispatchInput] = useReducer(inputReducer, defaultInputState);
+function useInput(rules: ((value: string) => RuleInterface)[], defaultValue?: string | null): useInputInterface {
+    const [inputState, dispatchInput] = useReducer(inputReducer, defaultInputState(defaultValue));
+
+    const inputIsValid = inputState.touched && inputState.isValid;
 
     // Handler for input value change
     function inputChangeHandler(value: string) {
         dispatchInput({
             type: InputActionType.INPUT_CHANGE,
-            payload: {value},
+            payload: { value, rules: rules },
         })
     }
 
@@ -100,6 +113,7 @@ function useInput(rules: ((value: string) => RuleInterface)[]): useInputInterfac
     return {
         value: inputState.value,
         isValid: inputState.isValid,
+        inputIsValid: inputIsValid,
         errorMessage: inputState.errorMessage,
         inputChangeHandler,
         inputBlurHandler,
@@ -148,8 +162,11 @@ export function useInputRules(): InputRulesInterface {
 
     // Rule if the value (email) is invalid
     const emailInvalid = (value: string): RuleInterface => {
+        const emailPattern = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$/;
+        const emailMatch = value.match(emailPattern);
+
         return {
-            rule: !(value.includes('@') && value.includes('.') && value.trim().length > 4),
+            rule: emailMatch === null,
             error: 'Email is invalid!',
         }
     }
