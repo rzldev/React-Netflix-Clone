@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom';
+//Router
+import { Link, useNavigate } from 'react-router-dom';
 // Styles
 import { CheckBox, Container, Header, Note, OfferList, PlanColumn, PlanColumnName, PlanItem as PI, PlanItemDevice, StyledButton } from './PlanForm.styles'
 // Icons
@@ -22,6 +23,7 @@ type PlantItemProps = {
 }
 
 function PlanForm() {
+    const navigate = useNavigate();
 
     const [choosedPlan, setChoosedPlan] = useState<PlanType>(PlanType.BASIC);
 
@@ -35,6 +37,16 @@ function PlanForm() {
                 {children}
             </PI>
         )
+    }
+
+    const formIsValid = choosedPlan !== null;
+
+    function submitHandler(event: React.FormEvent) {
+        event?.preventDefault();
+
+        if (formIsValid) {
+            navigate('/signin');
+        }
     }
 
     return (
@@ -57,7 +69,7 @@ function PlanForm() {
                     <span className="list-content">Change or cancel your plan anytime.</span>
                 </li>
             </OfferList>
-            <form>
+            <form onSubmit={submitHandler}>
                 <PlanColumn>
                     <PlanColumnName />
                     <CheckBox>
@@ -126,7 +138,7 @@ function PlanForm() {
                 <Note>HD (720p), Full HD (1080p), Ultra HD (4K) and HDR availability subject to your internet service and device capabilities. Not all content is available in all resolutions. See our <Link to="#">Terms of Use</Link> for more details.</Note>
                 <Note>Only people who live with you may use your account. Watch on 4 different devices at the same time with Premium, 2 with Standard, and 1 with Basic and Mobile.</Note>
             </div>
-            <StyledButton>Next</StyledButton>
+            <StyledButton onClick={submitHandler}>Next</StyledButton>
         </Container>
     )
 }

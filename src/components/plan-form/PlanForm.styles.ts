@@ -198,11 +198,20 @@ export const Note = styled.p`
 
 export const StyledButton = styled(Button)`
     width: 100%;
+    height: 64px;
     max-width: 600px;
     font-size: 1.5rem;
     font-weight: 500;
     padding: 20px 0;
     margin: 40px auto 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:disabled {
+        opacity: .7;
+        cursor: not-allowed;
+    }
 
     @media screen and (max-width: 991px) {
         font-size: 1.25rem;

@@ -53,10 +53,19 @@ export const Description = styled.p`
 
 export const StyledButton = styled(Button)`
     width: 100%;
+    max-height: 64px;
     font-size: 1.5rem;
     font-weight: 500;
     padding: 20px 0;
     margin-top: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:disabled {
+        opacity: .7;
+        cursor: not-allowed;
+    }
 
     @media screen and (max-width: 991px) {
         font-size: 1.25rem;
