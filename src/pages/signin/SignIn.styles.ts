@@ -20,7 +20,7 @@ export const Wrapper = styled.div`
     background-image: url('/assets/landing-banner.jpeg');
     background-size: cover;
     background-repeat: no-repeat;
-    z-index: -1;
+    z-index: 0;
 
     &:before {
         content: '';
@@ -50,16 +50,19 @@ export const Wrapper = styled.div`
 
 export const Container = styled.div`
     max-width: 500px;
+    min-height: 640px;
     background-color: rgba(0, 0, 0, .8);
     border: 8px solid rgba(0, 0, 0, .2);
     border-radius: 4px;
-    margin: 120px 24px 64px;
+    display: flex;
+    flex-direction: column;
+    margin: 120px 24px 80px;
     padding: 20px 64px 64px;
     z-index: 1;
 
     h1 {
         color: white;
-        margin-bottom: 24px;
+        margin-bottom: 32px;
     }
 
     form {
@@ -72,12 +75,12 @@ export const Container = styled.div`
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-top: 4px;
+        margin-top: 8px;
 
         > a {
-            font-size: 12px;
+            font-size: 14px;
             color: #999;
-            letter-spacing: .25px;
+            letter-spacing: .5px;
             text-decoration: none;
         }
 
@@ -96,14 +99,20 @@ export const Container = styled.div`
 
 export const SignInButton = styled(Button)`
     width: 100%;
-    margin-top: 16px;
+    height: 56px;
+    margin-top: 24px;
+
+    &:disabled {
+        opacity: .7;
+        cursor: not-allowed;
+    }
 `
 
 export const SignUpContainer = styled.div`
-    margin-top: 24px;
+    margin-top: auto;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
 
     .facebook-login {
         display: flex;
@@ -140,7 +149,7 @@ export const SignUpContainer = styled.div`
     }
 
     .policy {
-        font-size: 14px;
+        font-size: 12px;
         color: ${colors.grey[500]};
 
         > a {
