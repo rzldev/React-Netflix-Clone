@@ -155,6 +155,18 @@ export const ButtonSubmit = styled.button<SubmitProps>`
     border: none;
     padding: 16px 16px;
     position: relative;
+    transition: all;
+    transition-duration: .2s;
+    cursor: pointer;
+
+    &:disabled {
+        opacity: .7;
+        cursor: not-allowed;
+
+        .submit-label {
+            cursor: not-allowed;
+        }
+    }
 
     .submit-label {
         display: flex;
@@ -162,6 +174,7 @@ export const ButtonSubmit = styled.button<SubmitProps>`
         font-size: 24px;
         color: white;
         opacity: ${props => props.isLoading ? 0 : 1};
+        cursor: pointer;
 
         > svg {
             width: 28px;

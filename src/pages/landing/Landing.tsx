@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 // Styles
 import { Banner, Body, EnterEmail, Feature, Heading, Description, ButtonSubmit } from './Landing.styles';
 // Icons
@@ -9,10 +9,16 @@ import useInput, { useInputRules } from '../../hooks/use-input';
 import Footer, { FooterNavItem } from '../../components/footer/Footer';
 import LoadingSpinner from '../../components/ui/loading-spinner/LoadingSpinner';
 // Redux
-import { useDispatch } from 'react-redux';
-import { uiAction, NavbarType } from '../../store/slices/uiSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { uiAction, NavbarType } from '../../store/slices/ui-slice';
+import { checkEmailExists } from '../../store/actions/auth-action';
+import { RootState } from '../../store';
+import { useNavigate } from 'react-router-dom';
 
 function Landing() {
+    const navigate = useNavigate();
+
+    const authLoading = useSelector((state: RootState) => state.auth.loading);
     const dispatch = useDispatch();
 
     useEffect(() => {
@@ -22,19 +28,25 @@ function Landing() {
     const rules = useInputRules();
     const email = useInput([rules.emailIsEmpty, rules.emailInvalid]);
 
-    const [loadingForm, setLoadingForm] = useState<boolean>(false);
+    const emailFormValid = email.inputIsValid;
 
     async function submitFormHandler(event?: React.FormEvent): Promise<void> {
         event?.preventDefault();
 
-        if (email.isValid) {
-            // setLoadingForm(true);
-            // const response = await dispatch(checkEmailExists(email.value));
-            // setLoadingForm(false);
-
-            // if (response?.error) {
-
-            // }
+        if (emailFormValid) {
+            dispatch(checkEmailExists({
+                email: email.value,
+                onSuccess: (emailExists) => {
+                    if (emailExists) {
+                        navigate('/signin');
+                    } else {
+                        navigate('/signup/registration');
+                    }
+                },
+                onError: (message) => {
+                    console.log(message);
+                }
+            }));
         }
     }
 
@@ -64,13 +76,13 @@ function Landing() {
                                         onBlur={email.inputBlurHandler} />
                                     <p className="error">{(!email.isValid) && email.errorMessage}</p>
                                 </div>
-                                <ButtonSubmit isLoading={loadingForm} onClick={submitFormHandler} disabled={loadingForm}>
+                                <ButtonSubmit isLoading={authLoading} onClick={submitFormHandler} disabled={!emailFormValid || authLoading}>
                                     <label className="submit-label">
                                         <span>Get Started</span>
                                         <ChevronRightIcon />
                                     </label>
                                     {
-                                        loadingForm && (
+                                        authLoading && (
                                             <span className="loading"><LoadingSpinner size="32" color="white" /></span>
                                         )
                                     }
