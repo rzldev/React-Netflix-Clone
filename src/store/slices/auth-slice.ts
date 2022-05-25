@@ -1,58 +1,59 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { AuthState, Account, SetUserReducer, SetSubAccountReducer, SetSignOutReducer, SetEmailCredentialReducer, SetLoadingReducer, SetNeedVerificationReducer } from './authSliceTypes';
+import { AuthState, SetUserReducer, SetSubAccountReducer, SetSignOutReducer, SetEmailCredentialReducer, SetLoadingReducer, FetchUserReducer, SetIsLoggedInReducer, AddSubAccountReducer } from './auth-slice-types';
 
-const getUser = (): Account | null => {
-    const userStr = localStorage.getItem('user')
-    if (userStr) {
-        const user: Account = JSON.parse(userStr)
-        return {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            createdAt: user.createdAt,
-        }
-    } else {
-        return null
-    }
-}
-
+// Auth Initial State
 const authInitialState: AuthState = {
-    user: getUser(),
+    user: null,
     emailCredential: null,
-    isLoggedIn: localStorage.getItem('isLoggedIn') ? true : false,
+    isLoggedIn: sessionStorage.getItem('isLoggedIn') ? true : false,
     subAccount: null,
     loading: false,
     needVerification: false,
 }
 
+// Auth Reducer
 const authSlice = createSlice({
     name: 'auth',
     initialState: authInitialState,
     reducers: {
-        login(state, action: SetUserReducer) {
+        fetchUser(state, action: FetchUserReducer) {
             state.isLoggedIn = true;
-            state.user = action.payload
-            sessionStorage.setItem('isLoggedIn', String(state.isLoggedIn));
-            sessionStorage.setItem('user', JSON.stringify(state.user))
+            state.user = action.payload;
+            localStorage.setItem('isLoggedIn', String(state.isLoggedIn));
         },
-        signOut(state, action: SetSignOutReducer) {
-            state.isLoggedIn = false
-            state.user = null
-            sessionStorage.removeItem('isLoggedIn')
-            sessionStorage.removeItem('user')
+        login(state, action: SetUserReducer) {
+            state.user = action.payload.user;
+            if (action.payload.updateStatus) {
+                state.isLoggedIn = true;
+                localStorage.setItem('isLoggedIn', String(state.isLoggedIn));
+            }
+            if (state.user.id) localStorage.setItem('userId', state.user.id);
+        },
+        signOut(state, _: SetSignOutReducer) {
+            state.isLoggedIn = false;
+            state.user = null;
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userId');
+        },
+        setIsLoggedIn(state, _: SetIsLoggedInReducer) {
+            state.isLoggedIn = true;
+            localStorage.setItem('isLoggedIn', String(state.isLoggedIn));
         },
         setEmailCredential(state, action: SetEmailCredentialReducer) {
             state.emailCredential = action.payload;
         },
         setSubAccount(state, action: SetSubAccountReducer) {
             state.subAccount = action.payload;
+            sessionStorage.setItem('subAccountId', state.subAccount.name);
         },
         setLoading(state, action: SetLoadingReducer) {
             state.loading = action.payload
         },
-        setNeedVerification(state, action: SetNeedVerificationReducer) {
-            state.needVerification = true
-        }
+        addSubAccount(state, action: AddSubAccountReducer) {
+            let userTemp = state.user;
+            if (userTemp?.subAccounts) userTemp.subAccounts.push(action.payload);
+            state.user = userTemp;
+        },
     }
 });
 
@@ -60,6 +61,6 @@ export default authSlice;
 
 export const authAction = authSlice.actions;
 
-export type AuthActionTypes = typeof authAction
+export type AuthActionTypes = typeof authAction;
 
-export * from './authSliceTypes'
+export * from './auth-slice-types.d';
